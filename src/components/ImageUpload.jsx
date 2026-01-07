@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 
-export default function ImageUpload({ onImagesUpload }) {
+export default function ImageUpload({ onImagesUpload, uploading }) {
   const onDrop = useCallback((acceptedFiles) => {
     const imageFiles = acceptedFiles.filter(file => 
       file.type.startsWith('image/') && 
@@ -32,7 +32,8 @@ export default function ImageUpload({ onImagesUpload }) {
       'image/png': ['.png'],
       'image/webp': ['.webp']
     },
-    multiple: true
+    multiple: true,
+    disabled: uploading
   })
 
   return (
@@ -40,11 +41,12 @@ export default function ImageUpload({ onImagesUpload }) {
       <div
         {...getRootProps()}
         className={`
-          border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
-          transition-all duration-300 ease-in-out
-          ${isDragActive 
-            ? 'border-primary bg-primary/10 dark:bg-primary/10 shadow-lg shadow-primary/20' 
-            : 'border-gray-400 dark:border-gray-700 hover:border-primary/50 hover:bg-gray-100 dark:hover:bg-gray-800/50'
+          border-2 border-dashed rounded-lg p-12 text-center transition-all duration-300 ease-in-out
+          ${uploading 
+            ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800/50 cursor-not-allowed opacity-50' 
+            : isDragActive 
+            ? 'border-primary bg-primary/10 dark:bg-primary/10 shadow-lg shadow-primary/20 cursor-pointer' 
+            : 'border-gray-400 dark:border-gray-700 hover:border-primary/50 hover:bg-gray-100 dark:hover:bg-gray-800/50 cursor-pointer'
           }
         `}
       >
