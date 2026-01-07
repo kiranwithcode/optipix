@@ -108,17 +108,109 @@ export default function ImageOptions({
           </div>
         </div>
 
-        {/* Compression Quality Slider */}
+        {/* Compression Quality - Visual Selector */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white">
               Compression Quality
             </label>
-            <span className="text-sm font-semibold text-primary">
-              {localOptions.compressionQuality}%
-            </span>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={localOptions.compressionQuality}
+                  onChange={(e) => {
+                    const quality = Math.min(100, Math.max(0, parseInt(e.target.value) || 0))
+                    const preset = quality <= 60 ? 'low' : quality <= 85 ? 'medium' : quality < 100 ? 'high' : 'lossless'
+                    handleChange('compressionQuality', quality)
+                    handleChange('qualityPreset', preset)
+                  }}
+                  className="w-16 px-2 py-1.5 text-center text-lg font-bold bg-white dark:bg-gray-800 border-2 border-primary rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  aria-label="Compression quality percentage"
+                />
+                <span className="absolute -right-5 top-1/2 -translate-y-1/2 text-sm font-semibold text-primary">%</span>
+              </div>
+            </div>
           </div>
+          
+          {/* Visual Quality Meter */}
           <div className="relative">
+            {/* Background track */}
+            <div className="h-3 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 to-blue-500 rounded-full overflow-hidden">
+              {/* Active indicator */}
+              <div 
+                className="absolute top-0 h-3 bg-white/20 dark:bg-black/30 rounded-full transition-all duration-300"
+                style={{ 
+                  left: `${localOptions.compressionQuality}%`,
+                  width: `${100 - localOptions.compressionQuality}%`
+                }}
+              />
+            </div>
+            
+            {/* Quality markers */}
+            <div className="relative -mt-3 flex justify-between">
+              {[
+                { value: 50, label: 'Low', icon: '📉' },
+                { value: 80, label: 'Medium', icon: '⚖️' },
+                { value: 95, label: 'High', icon: '📈' },
+                { value: 100, label: 'Lossless', icon: '✨' }
+              ].map(({ value, label, icon }) => {
+                const isSelected = Math.abs(localOptions.compressionQuality - value) < 5
+                const isNear = Math.abs(localOptions.compressionQuality - value) < 15
+                
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      const preset = value === 50 ? 'low' : value === 80 ? 'medium' : value === 95 ? 'high' : 'lossless'
+                      handleChange('compressionQuality', value)
+                      handleChange('qualityPreset', preset)
+                    }}
+                    className={`
+                      relative flex flex-col items-center group cursor-pointer transition-all duration-200
+                      ${isSelected ? 'scale-125' : isNear ? 'scale-110' : 'scale-100'}
+                    `}
+                    style={{ left: `${value}%`, transform: 'translateX(-50%)' }}
+                    aria-label={`Select ${label} quality (${value}%)`}
+                  >
+                    {/* Marker dot */}
+                    <div className={`
+                      w-4 h-4 rounded-full border-2 transition-all duration-200
+                      ${isSelected 
+                        ? 'bg-white dark:bg-gray-900 border-primary shadow-lg ring-2 ring-primary/50' 
+                        : 'bg-white/80 dark:bg-gray-800 border-gray-400 dark:border-gray-600 group-hover:border-primary group-hover:scale-110'
+                      }
+                    `} />
+                    {/* Label */}
+                    <div className={`
+                      mt-2 text-xs font-medium whitespace-nowrap transition-colors
+                      ${isSelected 
+                        ? 'text-primary font-bold' 
+                        : 'text-gray-600 dark:text-gray-400 group-hover:text-primary'
+                      }
+                    `}>
+                      <div className="text-base mb-0.5">{icon}</div>
+                      <div>{label}</div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+            
+            {/* Slider handle */}
+            <div 
+              className="absolute top-0 -mt-1.5 transition-all duration-300"
+              style={{ left: `calc(${localOptions.compressionQuality}% - 12px)` }}
+            >
+              <div className="w-6 h-6 bg-white dark:bg-gray-800 border-3 border-primary rounded-full shadow-lg cursor-grab active:cursor-grabbing flex items-center justify-center">
+                <div className="w-2 h-2 bg-primary rounded-full" />
+              </div>
+            </div>
+            
+            {/* Interactive slider track */}
             <input
               type="range"
               min="0"
@@ -130,16 +222,15 @@ export default function ImageOptions({
                 handleChange('compressionQuality', quality)
                 handleChange('qualityPreset', preset)
               }}
-              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-              style={{
-                background: `linear-gradient(to right, #38BDF8 0%, #38BDF8 ${localOptions.compressionQuality}%, ${theme === 'dark' ? '#374151' : '#e5e7eb'} ${localOptions.compressionQuality}%, ${theme === 'dark' ? '#374151' : '#e5e7eb'} 100%)`
-              }}
+              className="absolute top-0 w-full h-3 opacity-0 cursor-pointer z-10"
               aria-label="Compression quality slider"
             />
           </div>
-          <div className="flex justify-between mt-1">
-            <span className="text-xs text-gray-500 dark:text-gray-400">Smaller size</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">Better quality</span>
+          
+          {/* Labels */}
+          <div className="flex justify-between mt-6">
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Smaller size</span>
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Better quality</span>
           </div>
         </div>
 
