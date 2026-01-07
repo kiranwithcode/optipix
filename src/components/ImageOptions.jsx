@@ -7,7 +7,8 @@ export default function ImageOptions({
   onCompress,
   onClear,
   loading,
-  canCompress
+  canCompress,
+  imageDimensions
 }) {
   const [localOptions, setLocalOptions] = useState(options)
   const { theme } = useTheme()
@@ -17,7 +18,35 @@ export default function ImageOptions({
   }, [options])
 
   const handleChange = (field, value) => {
-    const newOptions = { ...localOptions, [field]: value }
+    let newOptions = { ...localOptions, [field]: value }
+    
+    // Handle aspect ratio calculation when maintain aspect ratio is enabled
+    if (localOptions.maintainAspectRatio && imageDimensions && imageDimensions.aspectRatio) {
+      if (field === 'width') {
+        if (value && value.trim() !== '') {
+          const width = parseInt(value)
+          if (!isNaN(width) && width > 0) {
+            const calculatedHeight = Math.round(width / imageDimensions.aspectRatio)
+            newOptions = { ...newOptions, height: calculatedHeight.toString() }
+          }
+        } else {
+          // If width is cleared, also clear height
+          newOptions = { ...newOptions, height: '' }
+        }
+      } else if (field === 'height') {
+        if (value && value.trim() !== '') {
+          const height = parseInt(value)
+          if (!isNaN(height) && height > 0) {
+            const calculatedWidth = Math.round(height * imageDimensions.aspectRatio)
+            newOptions = { ...newOptions, width: calculatedWidth.toString() }
+          }
+        } else {
+          // If height is cleared, also clear width
+          newOptions = { ...newOptions, width: '' }
+        }
+      }
+    }
+    
     setLocalOptions(newOptions)
     onOptionsChange(newOptions)
   }
@@ -148,7 +177,7 @@ export default function ImageOptions({
               Compression Quality
             </label>
             <div className="flex items-center gap-2">
-              <div className="relative">
+              <div className="relative flex items-center gap-1">
                 <input
                   type="number"
                   min="0"
@@ -159,10 +188,10 @@ export default function ImageOptions({
                     const quality = parseInt(e.target.value) || 0
                     handleQualityChange(quality)
                   }}
-                  className="w-20 px-3 py-2 text-center text-lg font-bold bg-white dark:bg-gray-800 border-2 border-primary rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  className="w-20 px-3 py-2 text-center text-lg font-bold bg-transparent dark:bg-transparent border-2 border-primary rounded-lg text-primary dark:text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-primary/50"
                   aria-label="Compression quality percentage"
                 />
-                <span className="absolute -right-6 top-1/2 -translate-y-1/2 text-sm font-semibold text-primary">%</span>
+                <span className="text-lg font-semibold text-primary dark:text-primary">%</span>
               </div>
             </div>
           </div>
@@ -306,6 +335,9 @@ export default function ImageOptions({
                 <div>
                   <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
                     Width (px)
+                    {localOptions.maintainAspectRatio && imageDimensions && localOptions.height && (
+                      <span className="ml-2 text-xs text-primary font-medium">Auto</span>
+                    )}
                   </label>
                   <input
                     type="number"
@@ -320,6 +352,9 @@ export default function ImageOptions({
                 <div>
                   <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
                     Height (px)
+                    {localOptions.maintainAspectRatio && imageDimensions && localOptions.width && (
+                      <span className="ml-2 text-xs text-primary font-medium">Auto</span>
+                    )}
                   </label>
                   <input
                     type="number"
@@ -332,6 +367,17 @@ export default function ImageOptions({
                   />
                 </div>
               </div>
+              {localOptions.maintainAspectRatio && imageDimensions && (localOptions.width || localOptions.height) && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-2">
+                  <span>Original: {imageDimensions.width} × {imageDimensions.height}</span>
+                  {localOptions.width && localOptions.height && (
+                    <>
+                      <span>→</span>
+                      <span className="text-primary font-medium">{localOptions.width} × {localOptions.height}</span>
+                    </>
+                  )}
+                </p>
+              )}
             </div>
           )}
         </div>
