@@ -5,6 +5,7 @@ import ImageUpload from './components/ImageUpload'
 import SelectedImages from './components/SelectedImages'
 import ImageOptions from './components/ImageOptions'
 import ImagePreview from './components/ImagePreview'
+import Footer from './components/Footer'
 import { compressImage } from './utils/compression'
 
 function App() {
@@ -61,9 +62,9 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-white dark:bg-background transition-colors">
+      <div className="min-h-screen bg-white dark:bg-background transition-colors flex flex-col">
         <Navbar />
-        <main className="container mx-auto px-4 py-8 max-w-7xl">
+        <main className="container mx-auto px-4 py-8 max-w-7xl flex-1">
           <div className="space-y-8">
             <ImageUpload onImagesUpload={handleImagesUpload} />
             
@@ -99,6 +100,7 @@ function App() {
             )}
           </div>
         </main>
+        <Footer />
       </div>
     </ThemeProvider>
   )

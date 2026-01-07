@@ -1,0 +1,18 @@
+{
+  "name": "OptiPix - Image Compressor",
+  "short_name": "OptiPix",
+  "description": "High-performance image compressor that reduces image size without noticeable quality loss",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#38BDF8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

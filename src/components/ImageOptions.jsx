@@ -31,17 +31,47 @@ export default function ImageOptions({
     onOptionsChange(newOptions)
   }
 
+  // Check if quality matches a preset exactly
+  const getPresetFromQuality = (quality) => {
+    const presetValues = {
+      50: 'low',
+      80: 'medium',
+      95: 'high',
+      100: 'lossless'
+    }
+    // If exact match, return that preset
+    if (presetValues[quality] !== undefined) {
+      return presetValues[quality]
+    }
+    // Otherwise, it's custom
+    return 'custom'
+  }
+
   const handleQualityPresetChange = (preset) => {
     const qualityMap = {
       low: 50,
       medium: 80,
       high: 95,
-      lossless: 100
+      lossless: 100,
+      custom: localOptions.compressionQuality // Keep current value for custom
     }
     const newOptions = {
       ...localOptions,
       qualityPreset: preset,
-      compressionQuality: qualityMap[preset]
+      compressionQuality: qualityMap[preset] !== undefined ? qualityMap[preset] : localOptions.compressionQuality
+    }
+    setLocalOptions(newOptions)
+    onOptionsChange(newOptions)
+  }
+
+  const handleQualityChange = (quality) => {
+    const clampedQuality = Math.min(100, Math.max(0, quality))
+    const preset = getPresetFromQuality(clampedQuality)
+    
+    const newOptions = {
+      ...localOptions,
+      compressionQuality: clampedQuality,
+      qualityPreset: preset
     }
     setLocalOptions(newOptions)
     onOptionsChange(newOptions)
@@ -57,7 +87,8 @@ export default function ImageOptions({
     low: { label: 'Low Quality', desc: 'Smallest file size' },
     medium: { label: 'Medium Quality', desc: 'Balanced quality/size' },
     high: { label: 'High Quality', desc: 'Better quality, larger size' },
-    lossless: { label: 'Lossless', desc: 'No quality loss, largest size' }
+    lossless: { label: 'Lossless', desc: 'No quality loss, largest size' },
+    custom: { label: 'Custom', desc: 'Custom quality setting' }
   }
 
   return (
@@ -105,7 +136,7 @@ export default function ImageOptions({
               ))}
             </select>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {qualityPresets[localOptions.qualityPreset].desc}
+              {qualityPresets[localOptions.qualityPreset]?.desc || 'Custom quality setting'}
             </p>
           </div>
         </div>
@@ -122,12 +153,11 @@ export default function ImageOptions({
                   type="number"
                   min="0"
                   max="100"
+                  step="1"
                   value={localOptions.compressionQuality}
                   onChange={(e) => {
-                    const quality = Math.min(100, Math.max(0, parseInt(e.target.value) || 0))
-                    const preset = quality <= 60 ? 'low' : quality <= 85 ? 'medium' : quality < 100 ? 'high' : 'lossless'
-                    handleChange('compressionQuality', quality)
-                    handleChange('qualityPreset', preset)
+                    const quality = parseInt(e.target.value) || 0
+                    handleQualityChange(quality)
                   }}
                   className="w-20 px-3 py-2 text-center text-lg font-bold bg-white dark:bg-gray-800 border-2 border-primary rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   aria-label="Compression quality percentage"
@@ -179,11 +209,14 @@ export default function ImageOptions({
               value={localOptions.compressionQuality}
               onChange={(e) => {
                 const quality = parseInt(e.target.value)
-                const preset = quality <= 60 ? 'low' : quality <= 85 ? 'medium' : quality < 100 ? 'high' : 'lossless'
-                handleChange('compressionQuality', quality)
-                handleChange('qualityPreset', preset)
+                handleQualityChange(quality)
+              }}
+              onInput={(e) => {
+                const quality = parseInt(e.target.value)
+                handleQualityChange(quality)
               }}
               className="absolute top-1/2 -translate-y-1/2 w-full h-4 opacity-0 cursor-pointer z-20"
+              style={{ WebkitAppearance: 'none', appearance: 'none' }}
               aria-label="Compression quality slider"
             />
           </div>
