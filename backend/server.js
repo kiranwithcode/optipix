@@ -214,7 +214,7 @@ app.post('/api/video-info', upload.single('video'), async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`OptiPix Backend API running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`OptiPix Backend API running on port ${PORT}`);
 });
 
