@@ -23,7 +23,7 @@ export default function Navbar() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent leading-tight">
                 OptiPix
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1">Image Compressor</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1">Image & Video Compressor</p>
             </div>
           </div>
           <button
