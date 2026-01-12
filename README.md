@@ -21,6 +21,7 @@ A high-performance image and video compressor app that reduces file size without
 - 🎨 **Format Selection** - Output as MP4 or WebM
 - 👀 **Live Preview** - Compare original and compressed videos
 - 📊 **Size Statistics** - View file size reduction
+- 🌐 **100% Client-Side** - Works entirely in your browser, no backend required!
 
 ### General Features
 - 📱 **Fully Responsive** - Works seamlessly on mobile, tablet, and desktop
@@ -34,15 +35,18 @@ A high-performance image and video compressor app that reduces file size without
 - **Tailwind CSS** - Styling
 - **Vite** - Build tool
 - **browser-image-compression** - Client-side image compression
+- **@ffmpeg/ffmpeg** - Client-side video compression (FFmpeg.wasm)
 - **react-dropzone** - File upload with drag & drop
 - **jszip** - ZIP file creation
 - **file-saver** - File downloads
 
-### Backend
+### Backend (Optional)
 - **Node.js** - Runtime environment
 - **Express** - Web framework
-- **FFmpeg** - Video compression engine
+- **FFmpeg** - Video compression engine (alternative to client-side)
 - **Multer** - File upload handling
+
+> **Note:** Video compression now works entirely in the browser using FFmpeg.wasm. Backend is optional and only needed if you prefer server-side processing.
 
 ## Getting Started
 
@@ -53,40 +57,22 @@ A high-performance image and video compressor app that reduces file size without
 
 ### Installation
 
-1. **Install frontend dependencies:**
+1. **Install dependencies:**
 ```bash
 npm install
 ```
 
-2. **Install backend dependencies:**
-```bash
-cd backend
-npm install
-cd ..
-```
-
-3. **Configure environment (optional):**
-Create a `.env` file in the root directory:
-```
-VITE_API_URL=http://localhost:3001
-```
+That's it! No backend setup required - everything works in the browser.
 
 ### Development
 
-1. **Start the backend server:**
-```bash
-cd backend
-npm start
-# or for auto-reload: npm run dev
-```
-
-2. **Start the frontend (in a new terminal):**
 ```bash
 npm run dev
 ```
 
 The frontend will be available at `http://localhost:5173` (or the port Vite assigns).
-The backend API will be available at `http://localhost:3001`.
+
+**Note:** Both image and video compression work entirely in your browser - no backend server needed!
 
 ### Build
 
@@ -116,9 +102,11 @@ npm run preview
 1. **Select Feature**: Click on the "Video Compressor" card
 2. **Upload Video**: Drag and drop a video file or click to select
 3. **Configure Options**: Choose quality preset, resolution, format, and bitrate
-4. **Compress**: Click "Compress Video" to process (requires backend server)
+4. **Compress**: Click "Compress Video" to process (works entirely in your browser!)
 5. **Preview**: View side-by-side comparison with size statistics
 6. **Download**: Download the compressed video
+
+> **Note:** First-time compression may take a moment to load FFmpeg.wasm (~10MB download). Subsequent compressions are faster.
 
 ## Supported Formats
 
@@ -141,9 +129,11 @@ Modern browsers with support for:
 - Web Workers
 - Canvas API
 
-## Backend API
+## Backend API (Optional)
 
-The video compression feature requires the backend server to be running. See [backend/README.md](backend/README.md) for detailed API documentation.
+The backend is now **optional**. Video compression works entirely in the browser using FFmpeg.wasm. 
+
+The backend is available if you prefer server-side processing. See [backend/README.md](backend/README.md) for detailed API documentation.
 
 ## License
 

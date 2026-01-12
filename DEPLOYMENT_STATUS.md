@@ -93,3 +93,4 @@ npm run dev
 - **Render Dashboard:** https://dashboard.render.com
 - **GitHub Repo:** https://github.com/kiranwithcode/optipix
 
+

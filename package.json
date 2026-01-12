@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
+    "browser-image-compression": "^2.0.2",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "browser-image-compression": "^2.0.2",
-    "react-dropzone": "^14.2.3",
-    "jszip": "^3.10.1",
-    "file-saver": "^2.0.5"
+    "react-dropzone": "^14.2.3"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
@@ -26,4 +28,3 @@
     "vite": "^5.0.8"
   }
 }
-

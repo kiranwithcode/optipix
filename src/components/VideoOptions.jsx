@@ -47,9 +47,14 @@ export default function VideoOptions({
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-6 border border-gray-300 dark:border-gray-800 shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-        Compression Options
-      </h2>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Compression Options
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Compression happens entirely in your browser - no backend required!
+        </p>
+      </div>
 
       {video && (
         <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -171,4 +176,5 @@ export default function VideoOptions({
     </div>
   )
 }
+
 

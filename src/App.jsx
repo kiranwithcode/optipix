@@ -140,7 +140,7 @@ function App() {
       setCompressedVideo(result)
     } catch (error) {
       console.error('Video compression error:', error)
-      alert(`Error compressing video: ${error.message}. Make sure the backend server is running.`)
+      alert(`Error compressing video: ${error.message}`)
     } finally {
       setVideoLoading(false)
     }
