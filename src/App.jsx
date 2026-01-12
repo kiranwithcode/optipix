@@ -41,6 +41,7 @@ function App() {
   const [compressedVideo, setCompressedVideo] = useState(null)
   const [videoLoading, setVideoLoading] = useState(false)
   const [videoUploading, setVideoUploading] = useState(false)
+  const [compressionProgress, setCompressionProgress] = useState(0)
   const [videoOptions, setVideoOptions] = useState({
     qualityPreset: 'medium',
     format: 'mp4',
@@ -135,12 +136,17 @@ function App() {
     if (!video) return
 
     setVideoLoading(true)
+    setCompressionProgress(0)
     try {
-      const result = await compressVideo(video, videoOptions)
+      const result = await compressVideo(video, videoOptions, (progress) => {
+        setCompressionProgress(progress)
+      })
       setCompressedVideo(result)
+      setCompressionProgress(100)
     } catch (error) {
       console.error('Video compression error:', error)
       alert(`Error compressing video: ${error.message}`)
+      setCompressionProgress(0)
     } finally {
       setVideoLoading(false)
     }
@@ -376,12 +382,26 @@ function App() {
                               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                             />
                           </svg>
-                          <div className="text-center">
+                          <div className="text-center w-full">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                               Compressing Video...
                             </h3>
+                            <div className="w-full max-w-md mx-auto mb-2">
+                              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                <span>Progress</span>
+                                <span>{compressionProgress}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                <div 
+                                  className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                                  style={{ width: `${compressionProgress}%` }}
+                                ></div>
+                              </div>
+                            </div>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                              This may take a few minutes depending on video size
+                              {compressionProgress < 30 ? 'Loading video...' : 
+                               compressionProgress < 80 ? 'Processing video...' : 
+                               'Finalizing...'}
                             </p>
                           </div>
                         </div>

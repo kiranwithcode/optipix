@@ -62,13 +62,16 @@ async function initFFmpeg() {
         console.warn(`Failed to load from ${source.name}:`, err.message)
         lastError = err
         // Reset instance for next try
-        ffmpegInstance = new FFmpeg()
+        ffmpegInstance = new FFmpeg({ log: true })
         ffmpegInstance.on('log', ({ message }) => console.log('FFmpeg:', message))
-        ffmpegInstance.on('progress', ({ progress }) => {
-          if (progress !== undefined) {
-            console.log(`Progress: ${(progress * 100).toFixed(2)}%`)
-          }
-        })
+        if (onProgress) {
+          ffmpegInstance.on('progress', ({ progress }) => {
+            if (progress !== undefined && typeof progress === 'number') {
+              const progressPercent = Math.round(progress * 100)
+              onProgress(progressPercent)
+            }
+          })
+        }
         continue
       }
     }
@@ -125,11 +128,14 @@ export async function compressVideo(file, options, onProgress) {
     // Initialize FFmpeg with better error handling
     let ffmpeg
     try {
-      ffmpeg = await initFFmpeg()
+      ffmpeg = await initFFmpeg(onProgress)
     } catch (initError) {
       console.error('FFmpeg initialization error:', initError)
       throw new Error(`Failed to load video compressor. ${initError.message}. Please refresh the page and try again.`)
     }
+    
+    // Report initial progress
+    if (onProgress) onProgress(5)
     
     // Generate input and output filenames
     const inputFileName = 'input.' + (file.name.split('.').pop() || 'mp4')
@@ -137,8 +143,10 @@ export async function compressVideo(file, options, onProgress) {
     const outputFileName = `output.${outputFormat}`
     
     // Write input file to FFmpeg's virtual filesystem
+    if (onProgress) onProgress(10)
     const fileData = await fetchFile(file)
     await ffmpeg.writeFile(inputFileName, fileData)
+    if (onProgress) onProgress(20)
     
     // Build FFmpeg command
     const args = ['-i', inputFileName]
@@ -161,10 +169,12 @@ export async function compressVideo(file, options, onProgress) {
     }
     
     // Add video codec and bitrate
+    // Use ultrafast preset for faster compression (trade-off: larger file size)
     args.push('-c:v', 'libx264')
     args.push('-b:v', videoBitrate)
-    args.push('-preset', 'medium')
+    args.push('-preset', 'ultrafast') // Changed from 'medium' to 'ultrafast' for speed
     args.push('-crf', '23') // Constant Rate Factor for quality
+    args.push('-threads', '0') // Use all available threads
     
     // Add audio codec and bitrate
     args.push('-c:a', 'aac')
@@ -184,10 +194,15 @@ export async function compressVideo(file, options, onProgress) {
     args.push(outputFileName)
     
     // Execute FFmpeg command
+    if (onProgress) onProgress(30)
+    console.log('Starting FFmpeg compression with args:', args.join(' '))
     await ffmpeg.exec(args)
+    if (onProgress) onProgress(80)
     
     // Read output file
+    if (onProgress) onProgress(85)
     const data = await ffmpeg.readFile(outputFileName)
+    if (onProgress) onProgress(90)
     
     // Clean up virtual filesystem
     await ffmpeg.deleteFile(inputFileName)
