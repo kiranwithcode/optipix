@@ -11,7 +11,10 @@ async function initFFmpeg() {
     return ffmpegInstance
   }
 
-  ffmpegInstance = new FFmpeg()
+  // Create FFmpeg instance with worker disabled to avoid worker loading issues
+  ffmpegInstance = new FFmpeg({
+    log: true,
+  })
   
   // Set up logging
   ffmpegInstance.on('log', ({ message }) => {
