@@ -26,18 +26,61 @@ async function initFFmpeg() {
   })
 
   try {
-    // Load FFmpeg core
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
-    await ffmpegInstance.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-    })
+    // Load FFmpeg core - try multiple CDN sources
+    const cdnSources = [
+      {
+        name: 'jsdelivr',
+        baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm'
+      },
+      {
+        name: 'unpkg',
+        baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm'
+      },
+      {
+        name: 'unpkg-umd',
+        baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
+      }
+    ]
 
-    ffmpegLoaded = true
-    return ffmpegInstance
+    let lastError = null
+    
+    for (const source of cdnSources) {
+      try {
+        console.log(`Trying to load FFmpeg from ${source.name}...`)
+        await ffmpegInstance.load({
+          coreURL: await toBlobURL(`${source.baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${source.baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        })
+        
+        console.log(`Successfully loaded FFmpeg from ${source.name}`)
+        ffmpegLoaded = true
+        return ffmpegInstance
+      } catch (err) {
+        console.warn(`Failed to load from ${source.name}:`, err.message)
+        lastError = err
+        // Reset instance for next try
+        ffmpegInstance = new FFmpeg()
+        ffmpegInstance.on('log', ({ message }) => console.log('FFmpeg:', message))
+        ffmpegInstance.on('progress', ({ progress }) => {
+          if (progress !== undefined) {
+            console.log(`Progress: ${(progress * 100).toFixed(2)}%`)
+          }
+        })
+        continue
+      }
+    }
+    
+    // If all CDN sources fail, throw error
+    throw new Error(`Failed to load FFmpeg from all CDN sources. Last error: ${lastError?.message || 'Unknown error'}. Please check your internet connection.`)
   } catch (error) {
     console.error('Failed to load FFmpeg:', error)
-    throw new Error('Failed to initialize video compressor')
+    
+    // Check if it's a SharedArrayBuffer error
+    if (error.message && (error.message.includes('SharedArrayBuffer') || error.message.includes('cross-origin'))) {
+      throw new Error('Video compression requires Cross-Origin Isolation headers. Please ensure your server is configured with Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy headers.')
+    }
+    
+    throw new Error(`Failed to initialize video compressor: ${error.message}. If this persists, please refresh the page.`)
   }
 }
 
@@ -76,8 +119,14 @@ export async function getVideoInfo(file) {
 // Compress video using FFmpeg.wasm
 export async function compressVideo(file, options, onProgress) {
   try {
-    // Initialize FFmpeg
-    const ffmpeg = await initFFmpeg()
+    // Initialize FFmpeg with better error handling
+    let ffmpeg
+    try {
+      ffmpeg = await initFFmpeg()
+    } catch (initError) {
+      console.error('FFmpeg initialization error:', initError)
+      throw new Error(`Failed to load video compressor. ${initError.message}. Please refresh the page and try again.`)
+    }
     
     // Generate input and output filenames
     const inputFileName = 'input.' + (file.name.split('.').pop() || 'mp4')
