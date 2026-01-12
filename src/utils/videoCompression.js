@@ -6,8 +6,18 @@ let ffmpegInstance = null
 let ffmpegLoaded = false
 
 // Initialize FFmpeg
-async function initFFmpeg() {
+async function initFFmpeg(onProgress) {
   if (ffmpegLoaded && ffmpegInstance) {
+    // Re-setup progress callback if provided
+    if (onProgress) {
+      ffmpegInstance.on('progress', ({ progress }) => {
+        if (progress !== undefined && typeof progress === 'number') {
+          const progressPercent = Math.round(progress * 100)
+          onProgress(progressPercent)
+          console.log(`FFmpeg progress: ${progressPercent}%`)
+        }
+      })
+    }
     return ffmpegInstance
   }
 
@@ -22,11 +32,15 @@ async function initFFmpeg() {
   })
 
   // Set up progress
-  ffmpegInstance.on('progress', ({ progress, time }) => {
-    if (progress !== undefined) {
-      console.log(`Progress: ${(progress * 100).toFixed(2)}%`)
-    }
-  })
+  if (onProgress) {
+    ffmpegInstance.on('progress', ({ progress }) => {
+      if (progress !== undefined && typeof progress === 'number') {
+        const progressPercent = Math.round(progress * 100)
+        onProgress(progressPercent)
+        console.log(`FFmpeg progress: ${progressPercent}%`)
+      }
+    })
+  }
 
   try {
     // Load FFmpeg core - try multiple CDN sources
